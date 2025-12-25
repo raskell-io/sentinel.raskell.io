@@ -1,0 +1,46 @@
+# mise configuration for sentinel.raskell.io
+# https://mise.jdx.dev
+
+[tools]
+zola = "0.19"
+
+[tasks.serve]
+description = "Start development server"
+run = "zola serve --drafts"
+
+[tasks.build]
+description = "Build production site"
+run = "zola build"
+
+[tasks.convert-images]
+description = "Convert PNG/JPG images to AVIF format"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Check if ImageMagick is available
+if ! command -v magick &> /dev/null; then
+    echo "Error: ImageMagick is required. Install with: brew install imagemagick"
+    exit 1
+fi
+
+# Find and convert all PNG and JPG files in static directory
+find static -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" \) | while read -r img; do
+    avif_path="${img%.*}.avif"
+
+    # Skip if AVIF already exists and is newer than source
+    if [ -f "$avif_path" ] && [ "$avif_path" -nt "$img" ]; then
+        echo "Skipping $img (AVIF up to date)"
+        continue
+    fi
+
+    echo "Converting $img -> $avif_path"
+    magick "$img" -quality 80 "$avif_path"
+done
+
+echo "Image conversion complete!"
+'''
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -rf public"

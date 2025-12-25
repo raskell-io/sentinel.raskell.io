@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} | Agents | {{ config.title }}{% endblock %}
+
+{% block content %}
+<article class="article">
+    <div class="container container-narrow">
+        <header class="article-header">
+            <nav class="breadcrumb">
+                <a href="/agents/">Agents</a>
+                <span>/</span>
+                <span>{{ page.title }}</span>
+            </nav>
+            <div class="agent-header-detail">
+                <h1>{{ page.title }}</h1>
+                <div class="agent-badges">
+                    {% if page.extra.official %}
+                    <span class="agent-badge-official">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+                        Official
+                    </span>
+                    {% endif %}
+                    {% if page.extra.status %}
+                    <span class="agent-status {{ page.extra.status | lower }}">{{ page.extra.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if page.description %}
+            <p class="article-description">{{ page.description }}</p>
+            {% endif %}
+            <div class="agent-meta">
+                {% if page.extra.author %}
+                <span class="meta-item">
+                    <strong>Author:</strong> {{ page.extra.author }}
+                </span>
+                {% endif %}
+                {% if page.extra.version %}
+                <span class="meta-item">
+                    <strong>Version:</strong> {{ page.extra.version }}
+                </span>
+                {% endif %}
+                {% if page.extra.repo %}
+                <span class="meta-item">
+                    <a href="{{ page.extra.repo }}" target="_blank" rel="noopener">View Source</a>
+                </span>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="article-content prose">
+            {{ page.content | safe }}
+        </div>
+
+        {% if page.taxonomies.tags %}
+        <footer class="article-footer">
+            <div class="agent-tags">
+                {% for tag in page.taxonomies.tags %}
+                <span class="agent-tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+        </footer>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

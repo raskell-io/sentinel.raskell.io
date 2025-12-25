@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="{{ lang | default(value='en') }}" data-theme="auto">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
+    <meta name="author" content="{{ config.extra.author }}">
+
+    <title>{% block title %}{{ config.title }}{% endblock %}</title>
+
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ get_url(path='style.css') | safe }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ get_url(path='favicon.svg') | safe }}">
+
+    <!-- Theme detection script - runs before paint -->
+    <script>
+        (function() {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = stored || (prefersDark ? 'dark' : 'light');
+            document.documentElement.dataset.theme = theme;
+        })();
+    </script>
+
+    <!-- Feed -->
+    <link rel="alternate" type="application/atom+xml" title="Sentinel Feed" href="{{ get_url(path='atom.xml') | safe }}">
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="layout">
+        <header class="header">
+            <div class="container">
+                <nav class="nav">
+                    <a href="{{ get_url(path='/') }}" class="logo" aria-label="Sentinel Home">
+                        <img src="{{ get_url(path='img/sentinel-mascot.avif') | safe }}" alt="Sentinel" class="logo-img">
+                        <span class="logo-text">Sentinel</span>
+                    </a>
+                    <div class="nav-links">
+                        {% for link in config.extra.nav_links %}
+                        <a href="{{ link.url }}" {% if link.url is starting_with("http") %}target="_blank" rel="noopener"{% endif %}>
+                            {{ link.name }}
+                        </a>
+                        {% endfor %}
+                        <button class="theme-toggle" aria-label="Toggle theme" onclick="toggleTheme()">
+                            <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                            <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </button>
+                    </div>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <img src="{{ get_url(path='img/sentinel-mascot.avif') | safe }}" alt="Sentinel" class="footer-logo">
+                        <p>Guard the free web.</p>
+                    </div>
+                    <div class="footer-links">
+                        <div class="footer-col">
+                            <h4>Resources</h4>
+                            <a href="{{ config.extra.docs_external_url }}">Documentation</a>
+                            <a href="{{ config.extra.github }}">GitHub</a>
+                            <a href="/agents/">Agent Registry</a>
+                        </div>
+                        <div class="footer-col">
+                            <h4>Community</h4>
+                            <a href="{{ config.extra.github }}/issues">Issues</a>
+                            <a href="{{ config.extra.github }}/discussions">Discussions</a>
+                            <a href="{{ config.extra.github }}/blob/main/CONTRIBUTING.md">Contributing</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; {{ now() | date(format='%Y') }} <a href="https://raskell.io">raskell.io</a>. Licensed under Apache 2.0.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.dataset.theme;
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.dataset.theme = next;
+            localStorage.setItem('theme', next);
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

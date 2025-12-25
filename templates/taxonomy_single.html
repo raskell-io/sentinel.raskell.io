@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ term.name }} | Tags | {{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <nav class="breadcrumb">
+            <a href="/tags/">Tags</a>
+            <span>/</span>
+            <span>{{ term.name }}</span>
+        </nav>
+        <h1>{{ term.name }}</h1>
+        <p>{{ term.pages | length }} agent{% if term.pages | length != 1 %}s{% endif %} tagged with "{{ term.name }}"</p>
+    </div>
+</div>
+
+<section class="agents-section">
+    <div class="container">
+        <div class="agents-grid">
+            {% for page in term.pages %}
+            <article class="agent-card">
+                <div class="agent-header">
+                    <div class="agent-info">
+                        <h2 class="agent-name">
+                            <a href="{{ page.permalink | safe }}">{{ page.title }}</a>
+                        </h2>
+                        {% if page.extra.author %}
+                        <p class="agent-author">by {{ page.extra.author }}</p>
+                        {% endif %}
+                    </div>
+                    {% if page.extra.status %}
+                    <span class="agent-status {{ page.extra.status | lower }}">{{ page.extra.status }}</span>
+                    {% endif %}
+                </div>
+                <p class="agent-description">{{ page.description | default(value="No description available.") }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

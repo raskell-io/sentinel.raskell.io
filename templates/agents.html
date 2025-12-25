@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section.title }} | {{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>{{ section.title }}</h1>
+        <p>{{ section.description }}</p>
+    </div>
+</div>
+
+<section class="agents-section">
+    <div class="container">
+        {# Separate official and community agents #}
+        {% set official_agents = section.pages | filter(attribute="extra.official", value=true) %}
+        {% set community_agents = section.pages | filter(attribute="extra.official", value=false) %}
+
+        {# Official Agents #}
+        {% if official_agents %}
+        <div class="agents-category">
+            <div class="category-header">
+                <div class="category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+                    <h2>Official Agents</h2>
+                </div>
+                <p>Maintained by the Sentinel Core Team</p>
+            </div>
+            <div class="agents-grid">
+                {% for agent in official_agents %}
+                <article class="agent-card agent-official">
+                    <div class="agent-header">
+                        <div class="agent-info">
+                            <h3 class="agent-name">
+                                <a href="{{ agent.permalink | safe }}">{{ agent.title }}</a>
+                            </h3>
+                            {% if agent.extra.author %}
+                            <p class="agent-author">by {{ agent.extra.author }}</p>
+                            {% endif %}
+                        </div>
+                        {% if agent.extra.status %}
+                        <span class="agent-status {{ agent.extra.status | lower }}">{{ agent.extra.status }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="agent-description">{{ agent.description | default(value="No description available.") }}</p>
+                    {% if agent.taxonomies.tags %}
+                    <div class="agent-tags">
+                        {% for tag in agent.taxonomies.tags %}
+                        <span class="agent-tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {# Community Agents #}
+        <div class="agents-category">
+            <div class="category-header">
+                <div class="category-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <h2>Community Agents</h2>
+                </div>
+                <p>Built and maintained by the community</p>
+            </div>
+            {% if community_agents %}
+            <div class="agents-grid">
+                {% for agent in community_agents %}
+                <article class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-info">
+                            <h3 class="agent-name">
+                                <a href="{{ agent.permalink | safe }}">{{ agent.title }}</a>
+                            </h3>
+                            {% if agent.extra.author %}
+                            <p class="agent-author">by {{ agent.extra.author }}</p>
+                            {% endif %}
+                        </div>
+                        {% if agent.extra.status %}
+                        <span class="agent-status {{ agent.extra.status | lower }}">{{ agent.extra.status }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="agent-description">{{ agent.description | default(value="No description available.") }}</p>
+                    {% if agent.taxonomies.tags %}
+                    <div class="agent-tags">
+                        {% for tag in agent.taxonomies.tags %}
+                        <span class="agent-tag">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No community agents yet. Be the first to contribute!</p>
+                <a href="{{ config.extra.github }}/blob/main/CONTRIBUTING.md" class="btn btn-primary">
+                    Submit an Agent
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
