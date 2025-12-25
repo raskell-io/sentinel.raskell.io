@@ -1,0 +1,192 @@
+name: Submit New Agent
+description: Submit your Sentinel agent to be listed in the Agent Registry
+title: "[Agent] "
+labels: ["agent-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Submit Your Agent to the Registry
+
+        Thank you for building a Sentinel agent! Please fill out the information below so we can add it to the registry.
+
+        Before submitting, ensure your agent:
+        - Uses the `sentinel-agent-protocol` crate
+        - Has a public repository with documentation
+        - Includes installation instructions
+        - Has been tested with the current Sentinel release
+
+  - type: input
+    id: agent-name
+    attributes:
+      label: Agent Name
+      description: The display name for your agent (e.g., "Rate Limiter", "JWT Validator")
+      placeholder: My Awesome Agent
+    validations:
+      required: true
+
+  - type: input
+    id: crate-name
+    attributes:
+      label: Crate Name
+      description: The crates.io package name (if published)
+      placeholder: sentinel-agent-awesome
+
+  - type: input
+    id: docker-image
+    attributes:
+      label: Docker Image
+      description: The Docker image name (if available)
+      placeholder: ghcr.io/username/sentinel-agent-awesome
+
+  - type: input
+    id: repository
+    attributes:
+      label: Repository URL
+      description: Link to the source code repository
+      placeholder: https://github.com/username/sentinel-agent-awesome
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Current Version
+      description: The current version of your agent
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      description: The stability status of your agent
+      options:
+        - Experimental
+        - Beta
+        - Stable
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: Author
+      description: Your name or organization
+      placeholder: Your Name
+    validations:
+      required: true
+
+  - type: input
+    id: author-url
+    attributes:
+      label: Author URL
+      description: Link to your profile or organization
+      placeholder: https://github.com/username
+
+  - type: input
+    id: license
+    attributes:
+      label: License
+      description: The license your agent is released under
+      placeholder: MIT OR Apache-2.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Short Description
+      description: A brief description of what your agent does (max 200 characters)
+      placeholder: Provides rate limiting capabilities using the token bucket algorithm with support for multiple key types.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: tags
+    attributes:
+      label: Categories
+      description: Select all that apply
+      options:
+        - label: security
+        - label: auth
+        - label: traffic
+        - label: caching
+        - label: logging
+        - label: monitoring
+        - label: transformation
+        - label: validation
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: A longer description of your agent's features and use cases
+      placeholder: |
+        ## Overview
+
+        Describe what your agent does and why it's useful.
+
+        ## Features
+
+        - Feature 1
+        - Feature 2
+        - Feature 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration Example
+      description: Show how to configure the agent in Sentinel
+      placeholder: |
+        ```kdl
+        agent "my-agent" {
+            socket "/var/run/sentinel/my-agent.sock"
+            timeout 100ms
+
+            config {
+                option1 "value"
+                option2 true
+            }
+        }
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-payload
+    attributes:
+      label: Test Payload
+      description: Provide a simple way to test the agent
+      placeholder: |
+        ```bash
+        curl -i http://localhost:8080/test
+        ```
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission Checklist
+      description: Please confirm the following
+      options:
+        - label: My agent uses `sentinel-agent-protocol` for communication
+          required: true
+        - label: I have tested the agent with the current Sentinel release
+          required: true
+        - label: The repository includes documentation
+          required: true
+        - label: The agent does not contain malicious code
+          required: true
+        - label: I am the author or have permission to submit this agent
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        After submitting, a maintainer will review your agent and create a PR to add it to the registry.
+        You may be asked for additional information or changes before it's published.

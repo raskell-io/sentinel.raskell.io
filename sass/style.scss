@@ -1118,12 +1118,16 @@ img {
     background: var(--color-success);
     color: var(--color-bg);
 
-    &.experimental {
+    &.experimental, &.beta {
         background: var(--color-warning);
     }
 
     &.deprecated {
         background: var(--color-error);
+    }
+
+    &.planned {
+        background: var(--color-info);
     }
 }
 
@@ -1157,6 +1161,237 @@ img {
 
     p {
         margin-bottom: var(--space-lg);
+    }
+}
+
+.agent-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.agent-version {
+    font-size: 0.75rem;
+    font-family: var(--font-mono);
+    color: var(--color-text-subtle);
+    background: var(--color-bg-elevated);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+}
+
+.agent-install-badges {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.install-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border-subtle);
+
+    &.cargo {
+        color: var(--color-peach, #fab387);
+    }
+
+    &.docker {
+        color: var(--color-sapphire, #74c7ec);
+    }
+}
+
+// Create Agent CTA Section
+.create-agent-cta {
+    display: flex;
+    gap: var(--space-xl);
+    padding: var(--space-xl);
+    margin-top: var(--space-3xl);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+.create-agent-cta .cta-icon {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-md);
+    color: var(--color-primary);
+
+    svg {
+        margin-top: var(--space-md);
+    }
+
+    @media (max-width: 768px) {
+        margin: 0 auto;
+    }
+}
+
+.create-agent-cta .cta-content {
+    flex: 1;
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: var(--space-sm);
+    }
+
+    > p {
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-lg);
+    }
+}
+
+.cta-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--color-bg-subtle);
+    border-radius: var(--radius-md);
+}
+
+.cta-step {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+
+    @media (max-width: 768px) {
+        text-align: left;
+    }
+}
+
+.step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 50%;
+}
+
+.step-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+
+    strong {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    code {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        color: var(--color-primary);
+        background: var(--color-bg);
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: var(--radius-sm);
+    }
+
+    span {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+    }
+}
+
+.create-agent-cta .cta-actions {
+    display: flex;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+        justify-content: center;
+    }
+}
+
+// Agent Detail Page - Quick Install
+.agent-install-quick {
+    margin-top: var(--space-xl);
+    padding: var(--space-lg);
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+
+    h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-muted);
+        margin-bottom: var(--space-md);
+    }
+}
+
+.install-methods {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.install-method {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+.install-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 80px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+
+    svg {
+        color: var(--color-primary);
+    }
+}
+
+.agent-contribute {
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--color-border-subtle);
+
+    p {
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+
+        a {
+            color: var(--color-primary);
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 }
 

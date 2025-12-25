@@ -4,63 +4,72 @@ description = "High-performance response caching with TTL controls, cache tags, 
 template = "agent.html"
 
 [taxonomies]
-tags = ["performance", "cache", "core"]
+tags = ["performance", "caching"]
 
 [extra]
 official = true
 author = "Sentinel Core Team"
-status = "Experimental"
-version = "0.9.0"
-repo = "https://github.com/raskell-io/sentinel/tree/main/agents/cache"
+author_url = "https://github.com/raskell-io"
+status = "Planned"
+version = "-"
+license = "MIT OR Apache-2.0"
+repo = "https://github.com/raskell-io/sentinel"
+protocol_version = "0.1"
+
+# Not yet available
+# crate_name = "sentinel-agent-cache"
+# docker_image = "ghcr.io/raskell-io/sentinel-agent-cache"
 +++
 
 ## Overview
 
-The Response Cache agent accelerates your services by caching upstream responses. Supports memory and Redis backends with flexible invalidation strategies.
+> **Status: Planned** - This agent is on the roadmap but not yet available.
 
-## Features
+The Response Cache agent will accelerate your services by caching upstream responses. Planned support for memory and Redis backends with flexible invalidation strategies.
+
+## Planned Features
 
 - **Multiple Backends**: In-memory LRU or Redis for distributed caching
 - **Smart Key Generation**: Customizable cache keys including headers and query params
 - **Cache Tags**: Group cached items for bulk invalidation
 - **Stale-While-Revalidate**: Serve stale content while refreshing in background
 
-## Configuration
+## Proposed Configuration
 
-```toml
-[[agents]]
-name = "cache"
+```kdl
+agent "cache" {
+    socket "/var/run/sentinel/cache.sock"
+    timeout 50ms
+    fail-open true
 
-[agents.config]
-backend = "memory"  # or "redis"
-max_size = "512MB"
-default_ttl = 300
+    config {
+        backend "memory"  // or "redis"
+        max-size "512MB"
+        default-ttl 300
 
-[[agents.config.rules]]
-pattern = "/api/products/*"
-ttl = 3600
-vary = ["Accept-Language"]
-tags = ["products"]
+        rules {
+            "/api/products/*" {
+                ttl 3600
+                vary ["Accept-Language"]
+                tags ["products"]
+            }
 
-[[agents.config.rules]]
-pattern = "/api/users/*"
-bypass = true
+            "/api/users/*" {
+                bypass true
+            }
+        }
+    }
+}
 ```
 
 ## Cache Control
 
-The agent respects standard HTTP cache headers:
+The agent will respect standard HTTP cache headers:
 
 - `Cache-Control: no-store` - Bypass cache
 - `Cache-Control: max-age=N` - Override TTL
 - `Vary: Header` - Include header in cache key
 
-## Invalidation API
+## Contribute
 
-```bash
-# Invalidate by tag
-curl -X PURGE http://sentinel/cache/tags/products
-
-# Invalidate by URL pattern
-curl -X PURGE http://sentinel/cache/urls -d '{"pattern": "/api/products/*"}'
-```
+Interested in helping build this agent? Check out the [agent template](https://github.com/raskell-io/sentinel-agent-template) and [open an issue](https://github.com/raskell-io/sentinel/issues) to discuss!

@@ -1,52 +1,84 @@
 +++
 title = "Geo Filter"
-description = "Allow or block traffic based on geographic location using IP geolocation databases."
+description = "Block or allow requests based on geographic location using IP geolocation databases."
 template = "agent.html"
 
 [taxonomies]
-tags = ["security", "traffic", "geo"]
+tags = ["security", "filtering"]
 
 [extra]
 official = true
 author = "Sentinel Core Team"
-status = "Stable"
-version = "1.0.0"
-repo = "https://github.com/raskell-io/sentinel/tree/main/agents/geo-filter"
+author_url = "https://github.com/raskell-io"
+status = "Planned"
+version = "-"
+license = "MIT OR Apache-2.0"
+repo = "https://github.com/raskell-io/sentinel"
+protocol_version = "0.1"
+
+# Not yet available
+# crate_name = "sentinel-agent-geo"
+# docker_image = "ghcr.io/raskell-io/sentinel-agent-geo"
 +++
 
 ## Overview
 
-The Geo Filter agent enables geographic access control for your services. Block or allow traffic by country, region, or city using MaxMind GeoIP2 databases.
+> **Status: Planned** - This agent is on the roadmap but not yet available.
 
-## Features
+The Geo Filter agent will provide geographic-based access control using MaxMind GeoIP or similar databases. Block requests from specific countries, regions, or allow only specific locations.
 
-- **Country Filtering**: Allow/deny lists by ISO country codes
-- **Region/City Support**: Fine-grained filtering by subdivision
-- **MaxMind Integration**: Native support for GeoIP2 and GeoLite2 databases
-- **Header Injection**: Add geo information headers for downstream processing
+## Planned Features
 
-## Configuration
+- **Country/Region Blocking**: Allow or deny by ISO country codes
+- **MaxMind Integration**: Support for GeoLite2 and GeoIP2 databases
+- **IP Override Headers**: Respect X-Forwarded-For for proxied requests
+- **Location Forwarding**: Add geo headers for upstream services
 
-```toml
-[[agents]]
-name = "geo-filter"
+## Proposed Configuration
 
-[agents.config]
-database_path = "/data/GeoLite2-City.mmdb"
-mode = "allowlist"  # or "denylist"
-countries = ["US", "CA", "GB", "DE"]
+```kdl
+agent "geo-filter" {
+    socket "/var/run/sentinel/geo.sock"
+    timeout 50ms
+    fail-open true
 
-[agents.config.headers]
-country = "X-Geo-Country"
-city = "X-Geo-City"
-latitude = "X-Geo-Lat"
-longitude = "X-Geo-Lon"
+    config {
+        database "/etc/sentinel/GeoLite2-Country.mmdb"
 
-[[agents.config.exceptions]]
-path = "/health"
-bypass = true
+        // Default action: allow or deny
+        default-action "allow"
+
+        // Block specific countries
+        deny-countries ["RU" "CN" "KP"]
+
+        // Or allow only specific countries
+        // allow-countries ["US" "CA" "GB" "DE"]
+
+        // Headers to check for real IP (in order)
+        ip-headers ["CF-Connecting-IP" "X-Forwarded-For" "X-Real-IP"]
+
+        // Forward location to upstream
+        forward-headers {
+            "X-Geo-Country" "country_code"
+            "X-Geo-Region" "region"
+            "X-Geo-City" "city"
+        }
+    }
+}
 ```
 
-## Database Updates
+## Response
 
-The agent supports hot-reloading of GeoIP databases. Update the database file and send `SIGHUP` to reload without restart.
+When a request is blocked:
+
+```http
+HTTP/1.1 403 Forbidden
+X-Blocked-By: geo-filter
+Content-Type: application/json
+
+{"error": "access_denied", "reason": "geo_blocked", "country": "XX"}
+```
+
+## Contribute
+
+Interested in helping build this agent? Check out the [agent template](https://github.com/raskell-io/sentinel-agent-template) and [open an issue](https://github.com/raskell-io/sentinel/issues) to discuss!
