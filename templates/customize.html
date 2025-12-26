@@ -2,6 +2,74 @@
 
 {% block title %}{{ page.title }} | {{ config.title }}{% endblock %}
 
+{% block head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" integrity="sha512-vswe+cgvic/XBoF1OcM/TeJ2FW0OofqAVdCZiEYkd6dwGXthvkSFWOoGGJgS2CW70VK5dQM5Oh+7ne47s74VTg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+    /* Override Prism theme to match site */
+    code[class*="language-"],
+    pre[class*="language-"] {
+        background: transparent;
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        text-shadow: none;
+    }
+    pre[class*="language-"] {
+        padding: var(--space-lg);
+        margin: 0;
+        overflow: auto;
+    }
+    .token.comment { color: var(--color-text-muted); }
+    .token.string { color: #a6e3a1; }
+    .token.number { color: #fab387; }
+    .token.keyword { color: #cba6f7; }
+    .token.property { color: #89b4fa; }
+    .token.node-name { color: #f5c2e7; }
+    .token.punctuation { color: var(--color-text-muted); }
+
+    /* Light theme - darker colors */
+    [data-theme="light"] .code-output {
+        background: #ffffff;
+    }
+    [data-theme="light"] code[class*="language-"],
+    [data-theme="light"] pre[class*="language-"] {
+        color: #4c4f69;
+    }
+    [data-theme="light"] .token.comment { color: #6c6f85; }
+    [data-theme="light"] .token.string { color: #40a02b; }
+    [data-theme="light"] .token.number { color: #d6500a; }
+    [data-theme="light"] .token.keyword { color: #8839ef; }
+    [data-theme="light"] .token.property { color: #1e66f5; }
+    [data-theme="light"] .token.node-name { color: #dd3d9a; }
+    [data-theme="light"] .token.function { color: #1e66f5; }
+    [data-theme="light"] .token.builtin { color: #d6500a; }
+    [data-theme="light"] .token.operator { color: #179299; }
+    [data-theme="light"] .token.punctuation { color: #5c5f77; }
+
+    /* Code header actions */
+    .code-header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+    }
+    .code-link {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        transition: color var(--transition-fast);
+    }
+    .code-link:hover {
+        color: var(--color-primary);
+    }
+    .code-link code {
+        font-size: 0.75rem;
+        background: transparent;
+        padding: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="customize-page">
     <div class="container">
@@ -153,7 +221,7 @@
                             <span>Copy</span>
                         </button>
                     </div>
-                    <pre id="install-code"><code># Install Sentinel
+                    <pre id="install-code" class="language-bash"><code class="language-bash"># Install Sentinel
 cargo install sentinel-proxy
 
 # No agents selected yet</code></pre>
@@ -170,12 +238,18 @@ cargo install sentinel-proxy
                 <div class="code-output">
                     <div class="code-header">
                         <span class="code-label">sentinel.kdl</span>
-                        <button class="copy-btn" onclick="copyCode('config-code')" aria-label="Copy to clipboard">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            <span>Copy</span>
-                        </button>
+                        <div class="code-header-actions">
+                            <a href="https://kdl.dev/" target="_blank" rel="noopener" class="code-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                <span>Learn more about <code>.kdl</code></span>
+                            </a>
+                            <button class="copy-btn" onclick="copyCode('config-code')" aria-label="Copy to clipboard">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
                     </div>
-                    <pre id="config-code"><code>// Sentinel Configuration
+                    <pre id="config-code" class="language-kdl"><code class="language-kdl">// Sentinel Configuration
 // https://sentinel.raskell.io
 
 server {
@@ -250,6 +324,34 @@ upstreams {
 {% endblock %}
 
 {% block scripts %}
+<!-- Prism.js for syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js" integrity="sha512-whYbDijjMscqCqTVGmk6JIaKbOPLKnpLLz7LE5DEAWVM8PrSUq/YGRruVD/s0AAmdxOPgQFGvMfl8QJxZZPyDg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+// Define KDL language for Prism
+Prism.languages.kdl = {
+    'comment': [
+        {
+            pattern: /\/\/.*$/m,
+            greedy: true
+        },
+        {
+            pattern: /\/\*[\s\S]*?\*\//,
+            greedy: true
+        }
+    ],
+    'string': {
+        pattern: /"(?:[^"\\]|\\.)*"/,
+        greedy: true
+    },
+    'number': /\b\d+\b/,
+    'boolean': /\b(?:true|false|null)\b/,
+    'property': /[\w-]+(?=\s*=)/,
+    'node-name': /\b(?:server|listeners|listener|routes|route|upstreams|upstream|agents|agent|targets|target|transport|matches|events)\b/,
+    'keyword': /\b(?:address|protocol|path-prefix|path|load-balancing|worker-threads|graceful-shutdown-timeout-secs|timeout-ms|failure-mode|type|max-request-body-bytes)\b/,
+    'punctuation': /[{}[\]]/,
+};
+</script>
 <script>
 // Agent configuration data
 const agentConfigs = {
@@ -339,7 +441,9 @@ cargo install sentinel-proxy
 # No agents selected yet`;
     }
 
-    document.querySelector('#install-code code').textContent = installCode;
+    const installEl = document.querySelector('#install-code code');
+    installEl.textContent = installCode;
+    Prism.highlightElement(installEl);
 
     // Update config
     let configCode = `// Sentinel Configuration
@@ -399,7 +503,9 @@ agents {`;
 // No agents configured`;
     }
 
-    document.querySelector('#config-code code').textContent = configCode;
+    const configEl = document.querySelector('#config-code code');
+    configEl.textContent = configCode;
+    Prism.highlightElement(configEl);
 }
 
 // Copy code to clipboard
