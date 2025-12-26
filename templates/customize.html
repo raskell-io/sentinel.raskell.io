@@ -67,6 +67,25 @@
         background: transparent;
         padding: 0;
     }
+
+    /* Section note */
+    .section-note {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        margin-top: var(--space-md);
+        padding: var(--space-sm) var(--space-md);
+        background: var(--color-bg-elevated);
+        border-radius: var(--radius-md);
+        border-left: 3px solid var(--color-primary);
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+    }
+    .section-note svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--color-primary);
+    }
 </style>
 {% endblock %}
 
@@ -288,10 +307,34 @@ upstreams {
                 </div>
             </div>
 
+            <!-- Startup Command -->
+            <div class="customize-section">
+                <h2>
+                    <span class="section-number">5</span>
+                    Run Sentinel
+                </h2>
+                <p class="section-description">Start Sentinel with your configuration file.</p>
+                <div class="code-output">
+                    <div class="code-header">
+                        <span class="code-label">Shell</span>
+                        <button class="copy-btn" onclick="copyCode('startup-code')" aria-label="Copy to clipboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre id="startup-code" class="language-bash"><code class="language-bash"># Start Sentinel
+sentinel-proxy --config sentinel.kdl</code></pre>
+                </div>
+                <p class="section-note" id="startup-note" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    <span>Start agents before running Sentinel. Each agent runs as a separate process and communicates via Unix socket.</span>
+                </p>
+            </div>
+
             <!-- Next Steps -->
             <div class="customize-section next-steps">
                 <h2>
-                    <span class="section-number">5</span>
+                    <span class="section-number">6</span>
                     Next Steps
                 </h2>
                 <div class="next-steps-grid">
@@ -357,6 +400,8 @@ Prism.languages.kdl = {
 const agentConfigs = {
     auth: {
         crate: 'sentinel-agent-auth',
+        bin: 'sentinel-agent-auth',
+        socket: '/var/run/sentinel/auth.sock',
         config: `agent "auth" {
         type "auth"
         transport "unix_socket" {
@@ -369,6 +414,8 @@ const agentConfigs = {
     },
     ratelimit: {
         crate: 'sentinel-agent-ratelimit',
+        bin: 'sentinel-agent-ratelimit',
+        socket: '/var/run/sentinel/ratelimit.sock',
         config: `agent "ratelimit" {
         type "rate_limit"
         transport "unix_socket" {
@@ -381,6 +428,8 @@ const agentConfigs = {
     },
     denylist: {
         crate: 'sentinel-agent-denylist',
+        bin: 'sentinel-agent-denylist',
+        socket: '/var/run/sentinel/denylist.sock',
         config: `agent "denylist" {
         type "denylist"
         transport "unix_socket" {
@@ -393,6 +442,8 @@ const agentConfigs = {
     },
     waf: {
         crate: 'sentinel-agent-waf',
+        bin: 'sentinel-agent-waf',
+        socket: '/var/run/sentinel/waf.sock',
         config: `agent "waf" {
         type "waf"
         transport "unix_socket" {
@@ -406,6 +457,8 @@ const agentConfigs = {
     },
     lua: {
         crate: 'sentinel-agent-lua',
+        bin: 'sentinel-agent-lua',
+        socket: '/var/run/sentinel/lua.sock',
         config: `agent "lua" {
         type "lua"
         transport "unix_socket" {
@@ -506,6 +559,31 @@ agents {`;
     const configEl = document.querySelector('#config-code code');
     configEl.textContent = configCode;
     Prism.highlightElement(configEl);
+
+    // Update startup commands
+    let startupCode = '';
+    const startupNote = document.querySelector('#startup-note');
+
+    if (selectedAgents.length > 0) {
+        startupCode += `# Start agents (each in a separate terminal or as background processes)
+`;
+        selectedAgents.forEach(agent => {
+            startupCode += `${agentConfigs[agent].bin} --socket ${agentConfigs[agent].socket} &
+`;
+        });
+        startupCode += `
+# Start Sentinel
+sentinel-proxy --config sentinel.kdl`;
+        startupNote.style.display = 'flex';
+    } else {
+        startupCode = `# Start Sentinel
+sentinel-proxy --config sentinel.kdl`;
+        startupNote.style.display = 'none';
+    }
+
+    const startupEl = document.querySelector('#startup-code code');
+    startupEl.textContent = startupCode;
+    Prism.highlightElement(startupEl);
 }
 
 // Copy code to clipboard
