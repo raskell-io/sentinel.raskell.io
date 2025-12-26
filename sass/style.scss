@@ -1176,9 +1176,11 @@ img {
 // Footer
 // ============================================
 .footer {
+    position: relative;
     padding: var(--space-3xl) 0 var(--space-xl);
     background: var(--color-bg-subtle);
     border-top: 1px solid var(--color-border-subtle);
+    overflow: hidden;
 }
 
 .footer-content {
@@ -1331,6 +1333,115 @@ img {
         }
     }
 }
+
+// Page peel / folded corner effect
+.page-peel {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    z-index: 10;
+    text-decoration: none;
+    transition: all 0.3s ease;
+
+    // The revealed image underneath
+    background-image: url('/img/learn-you-the-web.avif');
+    background-size: 120px 120px;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+
+    // The folded page corner on top
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg,
+            transparent 50%,
+            $ctp-mocha-peach 50%
+        );
+        clip-path: polygon(100% 40%, 100% 100%, 40% 100%);
+        transition: all 0.3s ease;
+        box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    // The shadow along the fold
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg,
+            transparent 46%,
+            rgba(0, 0, 0, 0.1) 48%,
+            transparent 50%
+        );
+        transition: all 0.3s ease;
+    }
+
+    &:hover {
+        width: 100px;
+        height: 100px;
+
+        &::before {
+            clip-path: polygon(100% 35%, 100% 100%, 35% 100%);
+        }
+    }
+
+    &:hover .page-peel-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+}
+
+[data-theme="light"] .page-peel {
+    &::before {
+        background: linear-gradient(135deg,
+            transparent 50%,
+            $ctp-latte-peach 50%
+        );
+    }
+}
+
+.page-peel-tooltip {
+    position: absolute;
+    bottom: 90px;
+    right: 0;
+    width: 200px;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(5px);
+    transition: all 0.2s ease;
+    pointer-events: none;
+    text-align: left;
+
+    strong {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 2px;
+    }
+
+    span {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+    }
+}
+
 
 // ============================================
 // Agents Page
