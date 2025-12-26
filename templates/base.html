@@ -6,6 +6,21 @@
     <meta name="description" content="{% block description %}{{ config.description }}{% endblock %}">
     <meta name="author" content="{{ config.extra.author }}">
 
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ current_url | default(value=config.base_url) }}">
+    <meta property="og:title" content="{% block og_title %}{{ config.title }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ config.description }}{% endblock %}">
+    <meta property="og:image" content="{{ get_url(path='img/og-image.png') | safe }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ config.title }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ config.description }}{% endblock %}">
+    <meta name="twitter:image" content="{{ get_url(path='img/og-image.png') | safe }}">
+
     <title>{% block title %}{{ config.title }}{% endblock %}</title>
 
     <!-- Preload fonts -->
