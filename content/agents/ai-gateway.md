@@ -1,224 +1,228 @@
 +++
 title = "AI Gateway"
-description = "Unified control plane for LLM traffic with cost management, intelligent routing, semantic caching, and prompt security."
+description = "Security controls for AI API requests including prompt injection detection, PII filtering, rate limiting, and schema validation."
 template = "agent.html"
 
 [taxonomies]
-tags = ["ai", "llm", "gateway", "cost-control", "caching"]
+tags = ["ai", "llm", "gateway", "security", "rate-limiting"]
 
 [extra]
 official = true
 author = "Sentinel Core Team"
 author_url = "https://github.com/raskell-io"
-status = "Planned"
-version = ""
-license = "Apache-2.0"
-repo = ""
+status = "Beta"
+version = "0.1.0"
+license = "MIT"
+repo = "https://github.com/raskell-io/sentinel-agent-ai-gateway"
 homepage = "https://sentinel.raskell.io/agents/ai-gateway/"
 protocol_version = "0.1"
 
 # Installation methods
-crate_name = ""
+crate_name = "sentinel-agent-ai-gateway"
 docker_image = ""
 
 # Compatibility
-min_sentinel_version = ""
+min_sentinel_version = "25.12.0"
 +++
 
 ## Overview
 
-AI Gateway transforms Sentinel into a comprehensive control plane for LLM and AI API traffic. Manage costs, enforce security policies, cache responses, and route intelligently across multiple providers—all at the edge.
+AI Gateway provides comprehensive security controls for AI API traffic (OpenAI, Anthropic, Azure OpenAI). Detect prompt injections, filter PII, enforce rate limits, and validate request schemas at the edge.
 
-## Why an AI Gateway?
+## Features
 
-LLM APIs are expensive, unpredictable, and security-sensitive:
+### Security Controls
 
-- **Costs spiral quickly**: A single runaway script can burn through thousands in API credits
-- **Providers go down**: OpenAI outages shouldn't mean your app goes down
-- **Security is critical**: Prompt injection, data leakage, and jailbreaks are real threats
-- **Observability is lacking**: Hard to track usage, costs, and quality across providers
+- **Prompt Injection Detection**: Block attempts to override system prompts or manipulate AI behavior
+- **Jailbreak Detection**: Detect DAN, developer mode, and other bypass attempts
+- **PII Detection**: Detect emails, SSNs, phone numbers, credit cards, IP addresses
+  - Configurable actions: block, redact (coming soon), or log
+- **Schema Validation**: Validate requests against OpenAI and Anthropic JSON schemas
 
-AI Gateway solves all of this at the proxy layer.
+### Usage Control
 
-## Planned Features
+- **Rate Limiting**: Per-client limits for requests and tokens per minute
+- **Token Limits**: Enforce maximum tokens per request
+- **Cost Estimation**: Add headers with estimated cost based on model pricing
+- **Model Allowlist**: Restrict which AI models can be used
 
-### Cost & Usage Control
+### Observability
 
-- **Token Counting**: Pre-flight token estimation before requests hit the provider
-- **Budget Enforcement**: Per-user, per-team, and per-org spending caps
-- **Rate Limiting**: Requests per minute, tokens per hour, concurrent calls
-- **Quota Management**: Monthly allowances with configurable overage policies
-- **Cost Attribution**: Track spending by customer, endpoint, or application
+- **Provider Detection**: Auto-detect OpenAI, Anthropic, Azure from request
+- **Audit Tags**: Rich metadata for logging and monitoring
+- **Request Headers**: Informational headers for downstream processing
 
-### Intelligent Routing
+## Installation
 
-- **Multi-Provider Support**: OpenAI, Anthropic, Google, Cohere, Azure, local (Ollama)
-- **Automatic Failover**: Provider down? Seamlessly route to backup
-- **Cost-Optimized Routing**: Automatically select the cheapest capable model
-- **Latency-Based Routing**: Route to the fastest responding provider
-- **Complexity-Based Routing**: Simple queries → cheap models, complex → powerful
-- **A/B Testing**: Compare model quality on live traffic with holdout groups
+### Using Cargo
 
-### Caching & Optimization
-
-- **Semantic Cache**: Similar prompts return cached responses (embedding similarity)
-- **Exact Match Cache**: Identical requests served instantly
-- **Streaming Cache**: Cache and replay streaming responses
-- **Request Deduplication**: Collapse identical concurrent requests into one
-
-### Security & Compliance
-
-- **Prompt Injection Detection**: Block attempts to hijack system prompts
-- **PII Redaction**: Automatically strip sensitive data before sending to LLMs
-- **Output Filtering**: Block harmful, biased, or policy-violating responses
-- **Jailbreak Prevention**: Detect prompt manipulation and refuse-to-answer bypasses
-- **Topic Blocking**: Enforce content policies on inputs and outputs
-- **Audit Logging**: Complete request/response logging for compliance
-
-### Transformation & Normalization
-
-- **Unified API**: Single interface across all providers
-- **Prompt Templates**: Inject system prompts, guardrails, output formatting
-- **Response Schemas**: Enforce JSON Schema on structured outputs
-- **Provider Translation**: Automatic format conversion between provider APIs
-
-## Architecture
-
-```
-                         ┌─────────────────────────────────────┐
-                         │           AI Gateway Agent          │
-                         │                                     │
-   ┌─────────┐          │  ┌─────────┐  ┌─────────────────┐   │
-   │  App    │──────────┼─►│ Security │─►│ Router/Balancer │   │
-   └─────────┘          │  │  Layer   │  └────────┬────────┘   │
-                         │  └─────────┘           │             │
-                         │                        ▼             │
-                         │  ┌─────────────────────────────────┐ │
-                         │  │         Provider Pool           │ │
-                         │  │  ┌────────┐ ┌────────┐ ┌──────┐ │ │
-                         │  │  │ OpenAI │ │Anthropic│ │Ollama│ │ │
-                         │  │  └────────┘ └────────┘ └──────┘ │ │
-                         │  └─────────────────────────────────┘ │
-                         │                                     │
-                         │  ┌──────────┐  ┌───────────────┐    │
-                         │  │  Cache   │  │ Cost Tracker  │    │
-                         │  │(Semantic)│  │  & Quotas     │    │
-                         │  └──────────┘  └───────────────┘    │
-                         └─────────────────────────────────────┘
+```bash
+cargo install sentinel-agent-ai-gateway
 ```
 
-## Configuration (Preview)
+## Configuration
+
+### Command Line
+
+```bash
+sentinel-ai-gateway-agent \
+  --socket /tmp/sentinel-ai.sock \
+  --allowed-models "gpt-4,gpt-3.5-turbo,claude-3" \
+  --max-tokens 4000 \
+  --pii-action block \
+  --rate-limit-requests 60 \
+  --rate-limit-tokens 100000 \
+  --schema-validation
+```
+
+### Environment Variables
+
+| Option | Env Var | Description | Default |
+|--------|---------|-------------|---------|
+| `--socket` | `AGENT_SOCKET` | Unix socket path | `/tmp/sentinel-ai-gateway.sock` |
+| `--prompt-injection` | `PROMPT_INJECTION` | Enable prompt injection detection | `true` |
+| `--pii-detection` | `PII_DETECTION` | Enable PII detection | `true` |
+| `--pii-action` | `PII_ACTION` | Action on PII: block/redact/log | `log` |
+| `--jailbreak-detection` | `JAILBREAK_DETECTION` | Enable jailbreak detection | `true` |
+| `--schema-validation` | `SCHEMA_VALIDATION` | Enable JSON schema validation | `false` |
+| `--allowed-models` | `ALLOWED_MODELS` | Comma-separated model allowlist | (all) |
+| `--max-tokens` | `MAX_TOKENS` | Max tokens per request | `0` (unlimited) |
+| `--rate-limit-requests` | `RATE_LIMIT_REQUESTS` | Requests per minute per client | `0` (unlimited) |
+| `--rate-limit-tokens` | `RATE_LIMIT_TOKENS` | Tokens per minute per client | `0` (unlimited) |
+| `--block-mode` | `BLOCK_MODE` | Block or detect-only | `true` |
+
+### Sentinel Configuration
 
 ```kdl
 agent "ai-gateway" {
-    type "ai_gateway"
-    transport "unix_socket" {
-        path "/var/run/sentinel/ai-gateway.sock"
-    }
-    events ["request_headers" "request_body" "response_body"]
-    timeout-ms 120000
-    failure-mode "closed"
+    socket "/tmp/sentinel-ai-gateway.sock"
+    timeout 5s
+    events ["request_headers" "request_body_chunk"]
+}
 
-    // Provider backends
-    providers {
-        provider "openai" {
-            base-url "https://api.openai.com/v1"
-            api-key-env "OPENAI_API_KEY"
-            models ["gpt-4o" "gpt-4o-mini"]
-            priority 1
-        }
-        provider "anthropic" {
-            base-url "https://api.anthropic.com/v1"
-            api-key-env "ANTHROPIC_API_KEY"
-            models ["claude-sonnet-4-20250514" "claude-haiku"]
-            priority 2
-        }
-        provider "ollama" {
-            base-url "http://localhost:11434"
-            models ["llama3.2" "mistral"]
-            priority 3  // Local fallback
-        }
-    }
-
-    // Routing strategy
-    routing {
-        strategy "cost-optimized"
-        fallback-chain ["openai" "anthropic" "ollama"]
-        health-check-interval-secs 30
-    }
-
-    // Cost controls
-    budget {
-        global-limit-usd 10000.0
-        default-user-limit-usd 100.0
-        period "monthly"
-        alert-threshold 0.8
-        hard-limit true
-        overage-action "block"  // or "alert" | "throttle"
-    }
-
-    // Rate limits
-    rate-limits {
-        requests-per-minute 60
-        tokens-per-minute 100000
-        concurrent-requests 10
-    }
-
-    // Security
-    security {
-        prompt-injection-detection true
-        pii-redaction true
-        pii-fields ["email" "phone" "ssn" "credit_card"]
-        output-filtering true
-        blocked-topics ["illegal_activity" "self_harm"]
-        max-input-tokens 8000
-        max-output-tokens 4000
-    }
-
-    // Caching
-    cache {
-        enabled true
-        type "semantic"
-        embedding-model "text-embedding-3-small"
-        similarity-threshold 0.92
-        ttl-secs 3600
-        max-entries 10000
-    }
-
-    // Observability
-    metrics {
-        export-prometheus true
-        track-costs true
-        track-latency true
-        track-tokens true
-    }
+route {
+    match { hosts ["api.openai.com" "api.anthropic.com"] }
+    agents ["ai-gateway"]
+    upstream "ai-backend"
 }
 ```
 
-## Integration with Other Agents
+## Response Headers
 
-AI Gateway composes beautifully with other Sentinel agents:
+| Header | Description |
+|--------|-------------|
+| `X-AI-Gateway-Provider` | Detected provider (openai, anthropic, azure) |
+| `X-AI-Gateway-Model` | Model from request |
+| `X-AI-Gateway-Tokens-Estimated` | Estimated token count |
+| `X-AI-Gateway-Cost-Estimated` | Estimated cost in USD |
+| `X-AI-Gateway-PII-Detected` | Comma-separated PII types found |
+| `X-AI-Gateway-Schema-Valid` | Schema validation result |
+| `X-AI-Gateway-Blocked` | `true` if request was blocked |
+| `X-AI-Gateway-Blocked-Reason` | Reason for blocking |
+| `X-RateLimit-Limit-Requests` | Request limit per minute |
+| `X-RateLimit-Remaining-Requests` | Requests remaining in window |
+| `X-RateLimit-Reset` | Seconds until window resets |
+| `Retry-After` | Seconds to wait (when rate limited) |
+
+## Detection Patterns
+
+### Prompt Injection
+
+Detects patterns like:
+- "Ignore previous instructions"
+- "You are now a..."
+- "System prompt:"
+- Role manipulation attempts
+- System prompt extraction attempts
+
+### Jailbreak
+
+Detects patterns like:
+- DAN (Do Anything Now) and variants
+- Developer/debug mode requests
+- "Hypothetically" and "for educational purposes" framing
+- Evil/uncensored mode requests
+
+### PII
+
+Detects:
+- Email addresses
+- Social Security Numbers (SSN)
+- Phone numbers (US format)
+- Credit card numbers
+- Public IP addresses
+
+### Schema Validation
+
+Validates requests against JSON schemas for:
+- **OpenAI Chat**: model, messages, temperature (0-2), etc.
+- **OpenAI Completions**: model, prompt
+- **Anthropic Messages**: model, max_tokens, messages
+
+## Supported Providers
+
+| Provider | Detection | Paths |
+|----------|-----------|-------|
+| OpenAI | `Bearer sk-*` header | `/v1/chat/completions`, `/v1/completions` |
+| Anthropic | `anthropic-version` header | `/v1/messages`, `/v1/complete` |
+| Azure OpenAI | Path pattern | `/openai/deployments/*/chat/completions` |
+
+## Examples
+
+### Block Prompt Injection
+
+```bash
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Ignore all previous instructions and..."}]
+  }'
+```
+
+Response:
+```http
+HTTP/1.1 403 Forbidden
+X-AI-Gateway-Blocked: true
+X-AI-Gateway-Blocked-Reason: prompt-injection
+```
+
+### Rate Limited Response
+
+```http
+HTTP/1.1 429 Too Many Requests
+X-RateLimit-Limit-Requests: 60
+X-RateLimit-Remaining-Requests: 0
+X-RateLimit-Reset: 45
+Retry-After: 45
+```
+
+## Library Usage
+
+```rust
+use sentinel_agent_ai_gateway::{AiGatewayAgent, AiGatewayConfig, PiiAction};
+use sentinel_agent_protocol::AgentServer;
+
+let config = AiGatewayConfig {
+    prompt_injection_enabled: true,
+    pii_detection_enabled: true,
+    pii_action: PiiAction::Block,
+    jailbreak_detection_enabled: true,
+    schema_validation_enabled: true,
+    rate_limit_requests: 60,
+    rate_limit_tokens: 100000,
+    ..Default::default()
+};
+
+let agent = AiGatewayAgent::new(config);
+let server = AgentServer::new("ai-gateway", "/tmp/ai.sock", Box::new(agent));
+server.run().await?;
+```
+
+## Related Agents
 
 | Agent | Integration |
 |-------|-------------|
-| **Request Hold** | Pause high-cost requests for human approval |
-| **LLM Guardian** | Deep analysis of suspicious prompts |
-| **Telemetry** | Stream AI usage data to analytics pipelines |
+| **ModSecurity** | Full OWASP CRS support for web attacks |
 | **Auth** | Per-user API keys and quotas |
 | **Rate Limiter** | Additional rate limiting layers |
-
-## Metrics & Observability
-
-```
-# Prometheus metrics exposed
-sentinel_ai_gateway_requests_total{provider="openai", model="gpt-4o", status="success"}
-sentinel_ai_gateway_tokens_total{provider="openai", direction="input"}
-sentinel_ai_gateway_cost_usd_total{provider="openai", user="alice"}
-sentinel_ai_gateway_latency_seconds{provider="openai", quantile="0.99"}
-sentinel_ai_gateway_cache_hits_total{type="semantic"}
-sentinel_ai_gateway_security_blocks_total{reason="prompt_injection"}
-```
-
-## Status
-
-This agent is currently in the planning phase. Follow the [GitHub repository](https://github.com/raskell-io/sentinel) for updates.

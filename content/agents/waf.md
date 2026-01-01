@@ -1,6 +1,6 @@
 +++
 title = "WAF (Web Application Firewall)"
-description = "OWASP CRS-compatible web application firewall with SQL injection, XSS, and attack detection."
+description = "Lightweight WAF with native Rust regex patterns for SQL injection, XSS, and attack detection."
 template = "agent.html"
 
 [taxonomies]
@@ -27,15 +27,21 @@ min_sentinel_version = "25.12.0"
 
 ## Overview
 
-The WAF agent provides web application firewall capabilities compatible with OWASP Core Rule Set (CRS). Detect and block common web attacks including SQL injection, cross-site scripting (XSS), and more.
+A lightweight Web Application Firewall agent for Sentinel using **native Rust regex patterns**. Provides zero-dependency attack detection without requiring libmodsecurity or other C libraries.
+
+> **Note:** This agent implements a curated subset of detection rules inspired by OWASP CRS rule IDs, but does not use the full CRS ruleset. For full OWASP CRS compatibility with 800+ rules, see [ModSecurity agent](/agents/modsec/).
 
 ## Features
 
-- **OWASP CRS Compatible**: Uses industry-standard rule sets
-- **Attack Detection**: SQL injection, XSS, path traversal, RCE
-- **Anomaly Scoring**: Configurable thresholds for blocking
-- **Audit Logging**: Detailed logs of detected attacks
-- **Request Body Inspection**: Analyze POST data and JSON payloads
+- **Pure Rust**: No external C dependencies
+- **SQL Injection Detection**: UNION-based, blind, time-based
+- **XSS Detection**: Script tags, event handlers, JavaScript URIs
+- **Path Traversal**: Directory traversal, encoded attacks
+- **Command Injection**: Shell commands, pipe injection
+- **Scanner Detection**: Block known security scanners
+- **Request Body Inspection**: JSON, form data, all content types
+- **Paranoia Levels**: 1-4 for tuning sensitivity
+- **Detect-Only Mode**: Monitor without blocking
 
 ## Installation
 
@@ -45,81 +51,93 @@ The WAF agent provides web application firewall capabilities compatible with OWA
 cargo install sentinel-agent-waf
 ```
 
-### Using Docker
-
-```bash
-docker pull ghcr.io/raskell-io/sentinel-agent-waf:latest
-```
-
-### Docker Compose
-
-```yaml
-services:
-  waf-agent:
-    image: ghcr.io/raskell-io/sentinel-agent-waf:latest
-    volumes:
-      - /var/run/sentinel:/var/run/sentinel
-      - ./waf-rules:/etc/sentinel/waf-rules:ro
-    environment:
-      - SOCKET_PATH=/var/run/sentinel/waf.sock
-      - ANOMALY_THRESHOLD=5
-```
-
 ## Configuration
 
-Add the agent to your Sentinel configuration:
+### Command Line
+
+```bash
+sentinel-waf-agent --socket /var/run/sentinel/waf.sock --paranoia-level 1
+```
+
+### Environment Variables
+
+| Option | Env Var | Description | Default |
+|--------|---------|-------------|---------|
+| `--socket` | `AGENT_SOCKET` | Unix socket path | `/tmp/sentinel-waf.sock` |
+| `--paranoia-level` | `WAF_PARANOIA_LEVEL` | Sensitivity (1-4) | `1` |
+| `--sqli` | `WAF_SQLI` | Enable SQL injection detection | `true` |
+| `--xss` | `WAF_XSS` | Enable XSS detection | `true` |
+| `--path-traversal` | `WAF_PATH_TRAVERSAL` | Enable path traversal detection | `true` |
+| `--command-injection` | `WAF_COMMAND_INJECTION` | Enable command injection | `true` |
+| `--protocol` | `WAF_PROTOCOL` | Enable protocol attack detection | `true` |
+| `--block-mode` | `WAF_BLOCK_MODE` | Block (true) or detect-only (false) | `true` |
+| `--exclude-paths` | `WAF_EXCLUDE_PATHS` | Paths to exclude (comma-separated) | - |
+| `--body-inspection` | `WAF_BODY_INSPECTION` | Enable request body inspection | `true` |
+| `--max-body-size` | `WAF_MAX_BODY_SIZE` | Maximum body size (bytes) | `1048576` (1MB) |
+
+### Sentinel Configuration
 
 ```kdl
 agent "waf" {
     socket "/var/run/sentinel/waf.sock"
-    timeout 200ms
-    fail-open true  // Don't block if WAF fails
+    timeout 50ms
+    events ["request_headers" "request_body_chunk"]
+}
 
-    config {
-        anomaly-threshold 5
-        paranoia-level 1
-        inspect-body true
-        max-body-size "1MB"
-
-        // Enable specific rule categories
-        rules {
-            sqli true
-            xss true
-            rce true
-            lfi true
-            rfi true
-        }
-    }
+route {
+    match { path-prefix "/" }
+    agents ["waf"]
+    upstream "backend"
 }
 ```
 
-### Configuration Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `anomaly-threshold` | integer | `5` | Score threshold for blocking |
-| `paranoia-level` | integer | `1` | 1-4, higher = more strict |
-| `inspect-body` | boolean | `true` | Inspect request body |
-| `max-body-size` | string | `"1MB"` | Maximum body size to inspect |
-
-### Paranoia Levels
+## Paranoia Levels
 
 | Level | Description |
 |-------|-------------|
-| 1 | Minimal false positives, catches obvious attacks |
-| 2 | Balance between security and usability |
-| 3 | Stricter rules, more false positives possible |
-| 4 | Maximum security, requires tuning |
+| 1 | High-confidence detections only (recommended for production) |
+| 2 | Adds medium-confidence rules, more false positives possible |
+| 3 | Adds low-confidence rules, requires tuning |
+| 4 | Maximum sensitivity, expect false positives |
+
+## Detection Rules
+
+Rules follow OWASP CRS numbering conventions for familiarity.
+
+### SQL Injection (942xxx)
+- UNION-based injection
+- Tautology attacks (`OR 1=1`)
+- Comment injection (`--`, `#`, `/**/`)
+- Time-based blind injection (`SLEEP()`, `BENCHMARK()`)
+
+### Cross-Site Scripting (941xxx)
+- Script tag injection (`<script>`)
+- Event handler injection (`onclick=`, `onerror=`)
+- JavaScript URI (`javascript:`)
+- Data URI (`data:text/html`)
+
+### Path Traversal (930xxx)
+- Directory traversal (`../`, `..\\`)
+- URL-encoded traversal (`%2e%2e%2f`)
+- OS file access (`/etc/passwd`, `c:\\windows`)
+
+### Command Injection (932xxx)
+- Shell command injection (`; ls`, `| cat`)
+- Unix command execution (`$(...)`, backticks)
+- Windows command execution
+
+### Protocol Attacks (920xxx)
+- Scanner detection (Nikto, SQLMap, etc.)
+- Request smuggling patterns
+- Control characters
 
 ## Response Headers
 
-When a request is blocked or flagged:
-
 | Header | Description |
 |--------|-------------|
-| `X-WAF-Score` | Anomaly score for the request |
-| `X-WAF-Rules` | Triggered rule IDs (comma-separated) |
-| `X-WAF-Action` | Action taken: `pass`, `block`, `log` |
+| `X-WAF-Blocked` | `true` if request was blocked |
+| `X-WAF-Rule` | Rule ID that triggered block |
+| `X-WAF-Detected` | Rule IDs detected (detect-only mode) |
 
 ## Test Payloads
 
@@ -139,71 +157,43 @@ curl -i "http://localhost:8080/search?q=<script>alert(1)</script>"
 
 ```http
 HTTP/1.1 403 Forbidden
-X-WAF-Score: 15
-X-WAF-Rules: 942100,942200
-X-WAF-Action: block
-Content-Type: application/json
-
-{"error": "request_blocked", "reason": "waf_violation", "rules": ["942100", "942200"]}
+X-WAF-Blocked: true
+X-WAF-Rule: 942100
 ```
 
-## Examples
+## Comparison with ModSecurity Agent
 
-### Production Configuration
+| Feature | WAF | ModSecurity |
+|---------|-----|-------------|
+| Detection Rules | ~20 rules | 800+ CRS rules |
+| SecLang Support | No | Yes |
+| Custom Rules | No | Yes |
+| Dependencies | Pure Rust | libmodsecurity (C) |
+| Binary Size | ~5MB | ~50MB |
+| Memory Usage | Low | Higher |
+| Installation | `cargo install` | Requires libmodsecurity |
 
-```kdl
-agent "waf" {
-    socket "/var/run/sentinel/waf.sock"
-    timeout 200ms
-    fail-open true
+**Use WAF when:**
+- You want zero-dependency deployment
+- You need low latency and minimal resources
+- Basic attack detection is sufficient
 
-    config {
-        anomaly-threshold 5
-        paranoia-level 2
-        inspect-body true
-        max-body-size "2MB"
+**Use [ModSecurity](/agents/modsec/) when:**
+- You need full OWASP CRS compatibility
+- You have existing ModSecurity/SecLang rules
+- You require comprehensive 800+ rule protection
 
-        // Log all, block high-score
-        log-threshold 3
-        block-threshold 5
+## False Positive Handling
 
-        // Exclude trusted paths
-        exclude-paths [
-            "/health"
-            "/metrics"
-            "/internal/*"
-        ]
+1. **Lower paranoia level** - Start with level 1, increase gradually
+2. **Exclude paths** - Skip known-safe endpoints (`--exclude-paths`)
+3. **Detect-only mode** - Monitor before enabling blocking
+4. **Switch to ModSecurity** - For fine-grained rule tuning
 
-        rules {
-            sqli true
-            xss true
-            rce true
-            lfi true
-            rfi false  // Disable remote file inclusion rules
-        }
-    }
-}
-```
+## Related Agents
 
-### API-Specific WAF
-
-```kdl
-agent "waf" {
-    socket "/var/run/sentinel/waf.sock"
-
-    config {
-        anomaly-threshold 3
-        paranoia-level 1
-        inspect-body true
-
-        // JSON-specific settings
-        content-types ["application/json"]
-        json-depth 10
-
-        rules {
-            sqli true
-            xss true
-        }
-    }
-}
-```
+| Agent | Integration |
+|-------|-------------|
+| **ModSecurity** | Full OWASP CRS with 800+ rules |
+| **AI Gateway** | AI-specific security controls |
+| **Rate Limiter** | Combine with rate limiting |
