@@ -356,7 +356,7 @@ cargo install sentinel-proxy
                     <pre id="config-code" class="language-kdl"><code class="language-kdl">// Sentinel Configuration
 // https://sentinel.raskell.io
 
-server {
+system {
     worker-threads 0  // 0 = number of CPU cores
     graceful-shutdown-timeout-secs 30
 }
@@ -695,7 +695,7 @@ docker pull ghcr.io/raskell-io/sentinel:latest
     let configCode = `// Sentinel Configuration
 // https://sentinel.raskell.io
 
-server {
+system {
     worker-threads 0  // 0 = number of CPU cores
     graceful-shutdown-timeout-secs 30
 }
