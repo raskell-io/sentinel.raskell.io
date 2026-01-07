@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Playground | {{ config.title }}{% endblock %}
+{% block description %}Interactive Sentinel configuration playground - validate configs, simulate requests, and visualize routing decisions{% endblock %}
+
+{% block content %}
+<section class="playground-hero">
+    <div class="container">
+        <h1 class="playground-title">
+            <span class="gradient-text">Playground</span>
+        </h1>
+        <p class="playground-subtitle">
+            Validate configurations, simulate requests, and visualize how Sentinel routes traffic
+        </p>
+    </div>
+</section>
+
+<section class="playground-main">
+    <div class="container">
+        <div class="playground-grid">
+            <!-- Config Editor -->
+            <div class="playground-panel config-panel">
+                <div class="panel-header">
+                    <h2>Configuration</h2>
+                    <div class="validation-status" id="validation-status">
+                        <span class="status-icon" id="status-icon"></span>
+                        <span class="status-text" id="status-text">Loading...</span>
+                    </div>
+                </div>
+                <div class="editor-wrapper">
+                    <textarea id="config-editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off">system {
+    worker-threads 4
+    max-connections 10000
+}
+
+listeners {
+    listener "http" {
+        address "0.0.0.0:8080"
+        protocol "http"
+    }
+}
+
+routes {
+    route "api" {
+        priority "high"
+        matches {
+            path-prefix "/api"
+        }
+        upstream "backend"
+        policies {
+            timeout-secs 30
+            failure-mode "open"
+        }
+    }
+    route "static" {
+        priority "medium"
+        matches {
+            path-prefix "/static"
+        }
+        upstream "backend"
+    }
+    route "default" {
+        priority "low"
+        matches {
+            path-prefix "/"
+        }
+        upstream "backend"
+    }
+}
+
+upstreams {
+    upstream "backend" {
+        target "127.0.0.1:8081" weight=1
+        target "127.0.0.1:8082" weight=2
+        load-balancing "round_robin"
+    }
+}</textarea>
+                </div>
+                <div class="error-display" id="error-display"></div>
+            </div>
+
+            <!-- Request Builder -->
+            <div class="playground-panel request-panel">
+                <div class="panel-header">
+                    <h2>Request</h2>
+                </div>
+                <div class="request-builder">
+                    <div class="request-row">
+                        <label for="request-method">Method</label>
+                        <select id="request-method">
+                            <option value="GET" selected>GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                            <option value="HEAD">HEAD</option>
+                            <option value="OPTIONS">OPTIONS</option>
+                        </select>
+                    </div>
+                    <div class="request-row">
+                        <label for="request-host">Host</label>
+                        <input type="text" id="request-host" value="example.com" placeholder="example.com">
+                    </div>
+                    <div class="request-row">
+                        <label for="request-path">Path</label>
+                        <input type="text" id="request-path" value="/api/users" placeholder="/api/users">
+                    </div>
+                    <div class="request-row headers-row">
+                        <label>Headers</label>
+                        <div class="headers-list" id="headers-list">
+                            <!-- Headers added dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-small" id="add-header-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Header
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-gradient simulate-btn" id="simulate-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Simulate Request
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flow Diagram -->
+        <div class="playground-panel flow-panel" id="flow-panel">
+            <div class="panel-header">
+                <h2>Request Flow</h2>
+            </div>
+            <div class="flow-diagram" id="flow-diagram">
+                <div class="flow-placeholder">
+                    <p>Click "Simulate Request" to see the routing flow</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Trace -->
+        <div class="playground-panel trace-panel" id="trace-panel">
+            <div class="panel-header">
+                <h2>Detailed Trace</h2>
+                <button type="button" class="btn btn-ghost btn-small" id="toggle-trace-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    Expand All
+                </button>
+            </div>
+            <div class="trace-content" id="trace-content">
+                <div class="trace-placeholder">
+                    <p>Simulation results will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ get_url(path='js/playground.js') | safe }}"></script>
+{% endblock %}
