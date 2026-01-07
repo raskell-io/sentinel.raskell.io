@@ -969,3 +969,116 @@ $editor-padding: var(--space-md);
         transition: transform var(--transition-fast);
     }
 }
+
+// Info Box - Eye-catching WASM showcase
+.playground-info {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    margin-top: var(--space-xl);
+    background: linear-gradient(135deg,
+        rgba(203, 166, 247, 0.08) 0%,
+        rgba(245, 194, 231, 0.06) 50%,
+        rgba(250, 179, 135, 0.08) 100%
+    );
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+
+    // Gradient border effect
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        padding: 1px;
+        border-radius: var(--radius-lg);
+        background: linear-gradient(135deg, var(--ctp-mauve), var(--ctp-pink), var(--ctp-peach));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+}
+
+.info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    background: linear-gradient(135deg, var(--ctp-mauve), var(--ctp-pink));
+    border-radius: var(--radius-full);
+    width: fit-content;
+
+    svg {
+        width: 18px;
+        height: 18px;
+        color: white;
+    }
+
+    span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: white;
+    }
+}
+
+.info-content {
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-text);
+        margin: 0 0 var(--space-sm) 0;
+        background: linear-gradient(135deg, var(--ctp-mauve), var(--ctp-pink));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    p {
+        font-size: 0.9375rem;
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+        margin: 0 0 var(--space-md) 0;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+    }
+
+    .info-highlight {
+        padding: var(--space-md);
+        background: rgba(203, 166, 247, 0.1);
+        border-radius: var(--radius-md);
+        border-left: 3px solid var(--ctp-mauve);
+        font-size: 0.875rem;
+        color: var(--color-text);
+    }
+}
+
+.info-version-badge {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+
+    span {
+        display: inline-block;
+        padding: var(--space-xs) var(--space-sm);
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: var(--ctp-peach);
+        background: rgba(250, 179, 135, 0.15);
+        border: 1px solid rgba(250, 179, 135, 0.3);
+        border-radius: var(--radius-sm);
+    }
+}

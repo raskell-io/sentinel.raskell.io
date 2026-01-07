@@ -211,6 +211,9 @@
 
         <!-- Mobile Menu Overlay -->
         <div class="mobile-menu-overlay" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Navigation menu" aria-hidden="true">
+            <button class="mobile-menu-close" aria-label="Close navigation menu" onclick="closeMobileMenu()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
             <nav class="mobile-menu-content" role="navigation" aria-label="Mobile navigation">
                 {% for link in config.extra.nav_links %}
                 <a href="{{ link.url }}" class="mobile-menu-link" {% if link.url is starting_with("http") %}target="_blank" rel="noopener"{% endif %}>

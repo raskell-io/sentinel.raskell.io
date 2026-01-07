@@ -7,7 +7,8 @@ import init, {
     validate,
     simulate,
     create_sample_request,
-    init_panic_hook
+    init_panic_hook,
+    get_version
 } from '../wasm/sentinel_playground_wasm.js';
 
 // State
@@ -179,6 +180,18 @@ async function initWasm() {
         await init();
         init_panic_hook();
         wasmReady = true;
+
+        // Display version
+        try {
+            const version = get_version();
+            const versionEl = document.getElementById('wasm-version');
+            if (versionEl) {
+                versionEl.textContent = version;
+            }
+        } catch (e) {
+            console.warn('Could not get WASM version:', e);
+        }
+
         validateConfig();
     } catch (e) {
         setStatus('error', 'Failed to load');
